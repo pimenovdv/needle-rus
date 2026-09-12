@@ -16,7 +16,7 @@ enums, bounded numbers, verbatim copy for free text, five tools or fewer.
 import importlib
 
 _NAMES = ("data_capture", "kitchen_appliance", "media_player", "productivity",
-          "smart_home", "wearable")
+          "smart_home", "ru_smart_home", "wearable")
 
 __all__ = ["ENVIRONMENTS", "run_tests", *_NAMES]
 

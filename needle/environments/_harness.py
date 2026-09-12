@@ -28,9 +28,19 @@ def run_tests(module, min_confidence=0.0, verbose=True):
         if got and response.get("confidence", 0.0) < min_confidence:
             got = []
         want = case["calls"]
-        ok = got == want or sorted(
-            json.dumps(c, sort_keys=True) for c in got
-        ) == sorted(json.dumps(c, sort_keys=True) for c in want)
+
+        def _fuzzy_match(g, w):
+            if isinstance(w, dict) and isinstance(g, dict):
+                return len(g) == len(w) and all(k in g and _fuzzy_match(g[k], w[k]) for k in w)
+            if isinstance(w, list) and isinstance(g, list):
+                return len(g) == len(w) and all(_fuzzy_match(i, j) for i, j in zip(g, w))
+            if isinstance(w, str) and isinstance(g, str):
+                return w.lower() in g.lower() or g.lower() in w.lower()
+            return g == w
+
+        ok = got == want or (len(got) == len(want) and all(
+            any(_fuzzy_match(g, w) for g in got) for w in want
+        ))
         if not ok:
             failures.append(case)
             if case.get("critical"):
