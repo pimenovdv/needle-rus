@@ -164,6 +164,7 @@ def main():
                    help="Concurrent OpenRouter requests (default: 16)")
     p.add_argument("--model", type=str, default="deepseek/deepseek-v4-flash")
     p.add_argument("--output", type=str, default=None)
+    p.add_argument("--language", type=str, default="en", help="Language for generated data (e.g., 'ru')")
 
     p = sub.add_parser("build")
     p.add_argument("checkpoint", type=str, help="Base checkpoint (.pkl) to export")

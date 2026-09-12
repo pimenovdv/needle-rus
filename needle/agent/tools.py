@@ -111,7 +111,7 @@ def _parse_doc(doc):
         desc.append(lines[i].strip())
         i += 1
     for line in lines[i + 1:]:
-        m = re.match(r"\s+(\w+)\s*(?:\([^)]*\))?\s*:\s*(.+)", line)
+        m = re.match(r"\s+([^\s:(]+)\s*(?:\([^)]*\))?\s*:\s*(.+)", line, flags=re.UNICODE)
         if m:
             args[m.group(1)] = m.group(2).strip()
     return " ".join(w for w in desc if w).strip(), args
