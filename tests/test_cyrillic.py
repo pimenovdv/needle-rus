@@ -59,3 +59,65 @@ def test_language_prompt():
         system_prompt += f" All generated user requests and reasoning MUST be in {language} language."
 
     assert "MUST be in ru language" in system_prompt
+
+def test_cyrillic_masking(tmp_path):
+    from needle.model.finetune import _encode
+    from needle.model.tokenizer import get_tokenizer
+
+    tokenizer = get_tokenizer()
+    example = {
+        "query": "Отправь письмо Ивану",
+        "reasoning": "Запрос на отправку email",
+        "answers": [{"name": "send_email", "arguments": {"to": "Иван"}}]
+    }
+
+    # We use a large enough max_len to fit the encoded string
+    max_len = 128
+    ids, mask = _encode(tokenizer, example, max_len)
+
+    # Let's ensure the mask is 0.0 for the query part and 1.0 for the answer part
+    assert len(ids) == max_len
+    assert len(mask) == max_len
+
+    # Check that mask contains both 0.0 and 1.0
+    assert 0.0 in mask
+    assert 1.0 in mask
+
+    # Non-pad tokens should be > 0.
+    non_pad_count = 0
+    for id in ids:
+        if id != 0:
+            non_pad_count += 1
+
+    # The mask should have 1s at the end of the non-pad tokens (answer part)
+    # Target starts with `<think>\nЗапрос...` and ends with `<|im_end|>`
+    # We verify that target is correctly masked with 1.0
+    assert sum(mask) > 0
+    # There should be exactly 'pad' number of 0s at the very end
+    pad_count = sum(1 for id in ids if id == 0)
+    assert sum(mask[-pad_count:]) == 0.0 if pad_count > 0 else True
+
+def test_fit_max_len_cyrillic(tmp_path):
+    import json
+    from needle.model.finetune import fit_max_len
+    from needle.model.tokenizer import get_tokenizer
+
+    tokenizer = get_tokenizer()
+
+    # Create a dummy jsonl file with a highly segmented Cyrillic text
+    data_path = tmp_path / "data.jsonl"
+    example = {
+        "query": "Очень длинный текст на русском языке с большим количеством слов, которые могут разбиваться на множество токенов из-за ограниченного размера словаря. " * 10,
+        "answers": []
+    }
+    with open(data_path, "w", encoding="utf-8") as f:
+        f.write(json.dumps(example, ensure_ascii=False) + "\n")
+
+    # Test that fit_max_len correctly calculates and expands bucket
+    cap = 2048
+    bucket = fit_max_len(str(data_path), tokenizer, cap)
+
+    # Our query is very long, so the bucket should be fairly large, certainly larger than 128
+    assert bucket > 128
+    # But it should not exceed cap
+    assert bucket <= cap

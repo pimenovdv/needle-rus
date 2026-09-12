@@ -123,10 +123,11 @@ def main():
     p.add_argument("--checkpoint", type=str, required=True)
     p.add_argument("--query", type=str, default=None, help="Query text for tool-call generation")
     p.add_argument("--tools", type=str, default=None, help="Tools JSON for tool-call generation")
-    p.add_argument("--max-len", type=int, default=512)
+    p.add_argument("--max-len", type=int, default=None)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--temperature", type=float, default=0.0,
                    help="Sampling temperature (0 = greedy)")
+    p.add_argument("--language", type=str, default="en", help="Target language (e.g., 'ru' adjusts limits)")
 
     p = sub.add_parser("finetune")
     p.add_argument("jsonl_path", type=str, help="Path to JSONL training data")
@@ -137,7 +138,8 @@ def main():
     p.add_argument("--lr", type=float, default=1e-4)
     p.add_argument("--lora-rank", type=int, default=16, help="LoRA adapter rank (default: 16)")
     p.add_argument("--lora-alpha", type=float, default=32.0, help="LoRA scaling alpha (default: 32)")
-    p.add_argument("--max-len", type=int, default=1024, help="Max training sequence length")
+    p.add_argument("--max-len", type=int, default=None, help="Max training sequence length")
+    p.add_argument("--language", type=str, default="en", help="Target language (e.g., 'ru' sets larger max-len)")
     p.add_argument("--val-split", type=float, default=0.1,
                    help="Fraction of examples held out for validation (0 disables)")
     p.add_argument("--seed", type=int, default=0,
