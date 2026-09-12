@@ -86,7 +86,8 @@ def test_run_refuses_ungrounded_calls_unless_strict_is_off(stub):
     stub.envelopes = [_call("2026-09-05"), {"type": "respond", "function_calls": []}]
     agent = needle.Needle(tools=[Invoice])
     response = agent.run("Send an invoice to Acme due on 5th September 2031")
-    assert response["results"] == [{"error": "ungrounded due_date"}]
+    assert len(response["results"]) == 1
+    assert "ungrounded due_date" in response["results"][0].get("error", "").lower()
 
     stub.envelopes = [_call("2026-09-05"), {"type": "respond", "function_calls": []}]
     agent.reset()
@@ -126,5 +127,10 @@ def test_engine_reported_fabrications_are_kept_and_block_execution(stub):
     agent = needle.Needle(tools=[Invoice])
     response = agent.run("bill someone on 5th September 2031")
 
-    assert response["results"] == [{"error": "ungrounded vendor"}]
-    assert stub.calls[-1] == ("complete", json.dumps([{"error": "ungrounded vendor"}]))
+    assert len(response["results"]) == 1
+    assert "ungrounded vendor" in response["results"][0].get("error", "").lower()
+
+    # Also verify that the string passed to complete has the ungrounded error
+    last_call_json = json.loads(stub.calls[-1][1])
+    assert len(last_call_json) == 1
+    assert "ungrounded vendor" in last_call_json[0].get("error", "").lower()

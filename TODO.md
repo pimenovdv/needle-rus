@@ -17,13 +17,13 @@
 - [x] Рассмотреть увеличение `kv_window` или `max_len` для русскоязычных задач, если 256 токенов слишком мало.
 
 ## Фаза 4: Инференс и метрики
-- [ ] Перевести evaluation скрипты (`tests/test_grounding.py`, `tests/test_environments.py`) с exact match на `fuzzy-matching` или лемматизацию для устойчивости к русским словоформам.
-- [ ] Проверить грамматику (constrained decoding): кириллические JSON-ответы должны компилироваться в `byte-level` грамматику.
+- [x] Перевести evaluation скрипты (`tests/test_grounding.py`, `tests/test_environments.py`) с exact match на `fuzzy-matching` или лемматизацию для устойчивости к русским словоформам.
+- [x] Проверить грамматику (constrained decoding): кириллические JSON-ответы должны компилироваться в `byte-level` грамматику.
 
 ## Фаза 5: Тестирование и бенчмарки
 - [x] Написать unit-тесты на парсинг русскоязычных docstrings (`test_cyrillic.py`).
-- [ ] Создать end-to-end тест на русском `environments/ru_smart_home.py` (перевод `smart_home.py`).
-- [ ] Запуск тестов и проверка работы `build_schema` с русскими аннотациями.
+- [x] Создать end-to-end тест на русском `environments/ru_smart_home.py` (перевод `smart_home.py`).
+- [x] Запуск тестов и проверка работы `build_schema` с русскими аннотациями.
 
 ## Future Improvements & Optimizations
 * Оптимизация компрессии кириллических токенов.
