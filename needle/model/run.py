@@ -225,6 +225,11 @@ def main(args):
     model = SimpleAttentionNetwork(config)
     tokenizer = get_tokenizer(config.vocab_size)
 
+    max_len = getattr(args, "max_len", None)
+    if max_len is None:
+        language = getattr(args, "language", "en")
+        max_len = 1024 if language == "ru" else 512
+
     prompt = args.query or "The most surprising thing about"
     if getattr(args, "tools", None):
         with open(args.tools) as handle:
@@ -232,7 +237,7 @@ def main(args):
     print(f"prompt: {prompt!r}")
     generate(
         model, params, tokenizer, prompt,
-        max_new_tokens=args.max_len,
+        max_new_tokens=max_len,
         temperature=args.temperature,
         seed=args.seed,
     )

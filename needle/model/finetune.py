@@ -333,11 +333,17 @@ def finetune_local(args, progress=None):
     params = jax.device_put(params)
     emit(f"  {'backend':<9} {backend}  float32")
     tokenizer = get_tokenizer(config.vocab_size)
-    max_len = fit_max_len(data_path, tokenizer, args.max_len)
+
+    cap_max_len = getattr(args, "max_len", None)
+    if cap_max_len is None:
+        language = getattr(args, "language", "en")
+        cap_max_len = 2048 if language == "ru" else 1024
+
+    max_len = fit_max_len(data_path, tokenizer, cap_max_len)
     seqs, masks = load_jsonl(data_path, tokenizer, max_len)
     if len(seqs) == 0:
         raise SystemExit("no usable examples in " + data_path)
-    emit(f"  {'data':<9} {len(seqs)} examples  seq_len {max_len}  cap {args.max_len}")
+    emit(f"  {'data':<9} {len(seqs)} examples  seq_len {max_len}  cap {cap_max_len}")
 
     model = SimpleAttentionNetwork(config)
     qat_mode = getattr(args, "qat_bits", "auto")
