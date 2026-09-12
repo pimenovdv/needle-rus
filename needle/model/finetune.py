@@ -83,13 +83,16 @@ def _parse_array(text):
     return [r for r in rows if isinstance(r, dict) and "query" in r and "answers" in r]
 
 
-def generate_examples(tools, n=25, model=DEFAULT_MODEL, api_key=None, refusals=3):
+def generate_examples(tools, n=25, model=DEFAULT_MODEL, api_key=None, refusals=3, language="en"):
     api_key = api_key or os.environ.get("OPENROUTER_API_KEY")
     if not api_key:
         raise RuntimeError("set OPENROUTER_API_KEY to generate data")
     tools_json = tools if isinstance(tools, str) else json.dumps(tools, indent=2)
     prompt = _GEN_TEMPLATE.format(tools=tools_json, n=n, refusals=refusals)
-    text = _openrouter([{"role": "system", "content": _GEN_SYSTEM},
+    system_prompt = _GEN_SYSTEM
+    if language != "en":
+        system_prompt += f" All generated user requests and reasoning MUST be in {language} language."
+    text = _openrouter([{"role": "system", "content": system_prompt},
                         {"role": "user", "content": prompt}], model, api_key)
     rows = _parse_array(text)
     for row in rows:
@@ -103,7 +106,7 @@ def _dedup_key(example):
 
 
 def generate_dataset(tools, num_samples, model=DEFAULT_MODEL, batch_size=25,
-                     api_key=None, workers=8, progress=None):
+                     api_key=None, workers=8, progress=None, language="en"):
     api_key = api_key or os.environ.get("OPENROUTER_API_KEY")
     if not api_key:
         raise RuntimeError("set OPENROUTER_API_KEY to generate data")
@@ -117,7 +120,7 @@ def generate_dataset(tools, num_samples, model=DEFAULT_MODEL, batch_size=25,
     def _submit():
         nonlocal submitted
         pending.add(pool.submit(generate_examples, tools, batch_size,
-                                model=model, api_key=api_key))
+                                model=model, api_key=api_key, language=language))
         submitted += 1
 
     for _ in range(min(workers, max(1, -(-target // batch_size)))):
@@ -184,8 +187,10 @@ def generate_main(args):
         with open(args.tools) as handle:
             tools = json.load(handle)
         out = args.output or "needle_data.jsonl"
+        language = getattr(args, "language", "en")
         rows = generate_dataset(tools, args.num_samples, model=model,
-                                batch_size=args.batch_size, workers=workers)
+                                batch_size=args.batch_size, workers=workers,
+                                language=language)
         with open(out, "w") as handle:
             for row in rows:
                 handle.write(json.dumps(row) + "\n")
