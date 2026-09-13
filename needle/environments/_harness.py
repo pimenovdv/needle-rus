@@ -35,7 +35,8 @@ def run_tests(module, min_confidence=0.0, verbose=True):
             if isinstance(w, list) and isinstance(g, list):
                 return len(g) == len(w) and all(_fuzzy_match(i, j) for i, j in zip(g, w))
             if isinstance(w, str) and isinstance(g, str):
-                return w.lower() in g.lower() or g.lower() in w.lower()
+                import rapidfuzz
+                return rapidfuzz.fuzz.token_set_ratio(w.lower(), g.lower()) >= 80
             return g == w
 
         ok = got == want or (len(got) == len(want) and all(
