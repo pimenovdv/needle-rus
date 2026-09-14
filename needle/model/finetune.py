@@ -60,8 +60,8 @@ Rules:
 
 
 def _openrouter(messages, model, api_key, temperature=0.9):
-    payload = json.dumps({"model": model, "messages": messages,
-                          "temperature": temperature}).encode("utf-8")
+    payload = json.dumps({"model": model, "messages": messages, "temperature": temperature}, ensure_ascii=False).encode("utf-8")
+
     request = urllib.request.Request(OPENROUTER_URL, data=payload, headers={
         "Authorization": "Bearer " + api_key,
         "Content-Type": "application/json",
@@ -87,7 +87,7 @@ def generate_examples(tools, n=25, model=DEFAULT_MODEL, api_key=None, refusals=3
     api_key = api_key or os.environ.get("OPENROUTER_API_KEY")
     if not api_key:
         raise RuntimeError("set OPENROUTER_API_KEY to generate data")
-    tools_json = tools if isinstance(tools, str) else json.dumps(tools, indent=2)
+    tools_json = tools if isinstance(tools, str) else json.dumps(tools, indent=2, ensure_ascii=False)
     prompt = _GEN_TEMPLATE.format(tools=tools_json, n=n, refusals=refusals)
     system_prompt = _GEN_SYSTEM
     if language != "en":
@@ -102,7 +102,7 @@ def generate_examples(tools, n=25, model=DEFAULT_MODEL, api_key=None, refusals=3
 
 def _dedup_key(example):
     answers = example.get("answers", example.get("function_calls", []))
-    return (example.get("query", "").strip().lower(), json.dumps(answers, sort_keys=True))
+    return (example.get("query", "").strip().lower(), json.dumps(answers, sort_keys=True, ensure_ascii=False))
 
 
 def generate_dataset(tools, num_samples, model=DEFAULT_MODEL, batch_size=25,
@@ -173,9 +173,9 @@ def augment_jsonl(path, num_samples, model=DEFAULT_MODEL, batch_size=25, out_pat
     out_path = out_path or path.replace(".jsonl", "") + ".augmented.jsonl"
     generated = generate_dataset(tools, num_samples, model=model or DEFAULT_MODEL,
                                  batch_size=batch_size, workers=workers)
-    with open(out_path, "w") as handle:
+    with open(out_path, "w", encoding="utf-8") as handle:
         for example in examples + generated:
-            handle.write(json.dumps(example) + "\n")
+            handle.write(json.dumps(example, ensure_ascii=False) + "\n")
     print(f"  {'wrote':<9} {len(examples) + len(generated)} examples  {out_path}")
     return out_path
 
@@ -191,9 +191,9 @@ def generate_main(args):
         rows = generate_dataset(tools, args.num_samples, model=model,
                                 batch_size=args.batch_size, workers=workers,
                                 language=language)
-        with open(out, "w") as handle:
+        with open(out, "w", encoding="utf-8") as handle:
             for row in rows:
-                handle.write(json.dumps(row) + "\n")
+                handle.write(json.dumps(row, ensure_ascii=False) + "\n")
         print(f"  {'wrote':<9} {len(rows)} examples  {out}")
     elif args.augment:
         augment_jsonl(args.augment, args.num_samples, model=model,
