@@ -95,7 +95,7 @@ def test_fit_max_len_buckets(tok, tmp_path):
 
     path = tmp_path / "data.jsonl"
     with open(path, "w") as handle:
-        handle.write(json.dumps({"tools": [], "query": "short", "answers": []}) + "\n")
+        handle.write(json.dumps({"tools": [], "query": "short", "answers": []}, ensure_ascii=False) + "\n")
 
     assert fit_max_len(str(path), tok, 1024) == 128
     assert fit_max_len(str(path), tok, 64) == 64
@@ -112,7 +112,7 @@ def test_load_jsonl_shapes_and_skips_invalid(tok, tmp_path):
     ]
     with open(path, "w") as handle:
         for row in rows:
-            handle.write(json.dumps(row) + "\n")
+            handle.write(json.dumps(row, ensure_ascii=False) + "\n")
         handle.write("\n")
 
     seqs, masks = load_jsonl(str(path), tok, max_len=32)

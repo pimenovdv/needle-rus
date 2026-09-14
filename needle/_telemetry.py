@@ -71,7 +71,7 @@ def _send(event: str, props: dict | None) -> None:
             "arch": platform.machine(),
             "python": platform.python_version(),
             "props": properties,
-        }).encode("utf-8")
+        }, ensure_ascii=False).encode("utf-8")
         req = urllib.request.Request(
             ENDPOINT, data=payload,
             headers={"Content-Type": "application/json"})

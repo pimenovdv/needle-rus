@@ -163,7 +163,7 @@ class Needle:
                           stacklevel=2)
         self._system_text = system or ""
         self._system = self._system_text.encode("utf-8")
-        tools_json = tools if isinstance(tools, str) else json.dumps(self._resolve(tools))
+        tools_json = tools if isinstance(tools, str) else json.dumps(self._resolve(tools), ensure_ascii=False)
         self._tools_json = tools_json.encode("utf-8")
         try:
             parsed_tools = json.loads(tools_json)
@@ -308,7 +308,7 @@ class Needle:
                 except Exception as exc:
                     results.append({"error": str(exc)})
             executed.extend(results)
-            response = self._complete(json.dumps(results, default=_jsonable),
+            response = self._complete(json.dumps(results, default=_jsonable, ensure_ascii=False),
                                       max_new_tokens, ground=False)
         response["results"] = executed
         return response

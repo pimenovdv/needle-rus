@@ -76,7 +76,7 @@ def _finetune_worker(tools_json, api_key, samples, engine):
         data_path = str(_DOWNLOADS / "needle_playground_data.jsonl")
         with open(data_path, "w") as handle:
             for row in rows:
-                handle.write(json.dumps(row) + "\n")
+                handle.write(json.dumps(row, ensure_ascii=False) + "\n")
 
         _FT["step"] = "training"
         adapter = str(_DOWNLOADS / "needle_playground_lora.pkl")
@@ -117,9 +117,9 @@ class _Handler(BaseHTTPRequestHandler):
             f = _DIR / _STATIC[path]
             self._send(200, f.read_bytes(), _CTYPE[f.suffix])
         elif path == "/model":
-            self._send(200, json.dumps({"name": self.engine.name}))
+            self._send(200, json.dumps({"name": self.engine.name}, ensure_ascii=False))
         elif path == "/finetune/status":
-            self._send(200, json.dumps(_FT))
+            self._send(200, json.dumps(_FT, ensure_ascii=False))
         elif path.startswith("/download/"):
             name = os.path.basename(path[len("/download/"):])
             f = _DOWNLOADS / name
@@ -135,39 +135,39 @@ class _Handler(BaseHTTPRequestHandler):
             if self.path == "/complete":
                 body = self._json_body()
                 tools = body.get("tools", [])
-                tools_json = tools if isinstance(tools, str) else json.dumps(tools)
+                tools_json = tools if isinstance(tools, str) else json.dumps(tools, ensure_ascii=False)
                 result = self.engine.complete(tools_json, body.get("query", ""))
-                self._send(200, json.dumps(result))
+                self._send(200, json.dumps(result, ensure_ascii=False))
             elif self.path == "/reset":
                 self.engine.reset()
-                self._send(200, json.dumps({"ok": True}))
+                self._send(200, json.dumps({"ok": True}, ensure_ascii=False))
             elif self.path == "/load-model":
                 name = os.path.basename(self.headers.get("X-Filename", "model.cact"))
                 length = int(self.headers.get("Content-Length", 0))
                 dest = _DOWNLOADS / name
                 dest.write_bytes(self.rfile.read(length))
                 self.engine.load_weights(str(dest))
-                self._send(200, json.dumps({"name": self.engine.name}))
+                self._send(200, json.dumps({"name": self.engine.name}, ensure_ascii=False))
             elif self.path == "/finetune":
                 if _FT["running"]:
-                    self._send(200, json.dumps({"error": "a finetune is already running"}))
+                    self._send(200, json.dumps({"error": "a finetune is already running"}, ensure_ascii=False))
                     return
                 body = self._json_body()
                 api_key = (body.get("api_key") or "").strip()
                 if not api_key:
-                    self._send(200, json.dumps({"error": "OpenRouter API key is required"}))
+                    self._send(200, json.dumps({"error": "OpenRouter API key is required"}, ensure_ascii=False))
                     return
                 tools = body.get("tools", "[]")
-                tools_json = tools if isinstance(tools, str) else json.dumps(tools)
+                tools_json = tools if isinstance(tools, str) else json.dumps(tools, ensure_ascii=False)
                 samples = int(body.get("samples", 200))
                 threading.Thread(target=_finetune_worker,
                                  args=(tools_json, api_key, samples, self.engine),
                                  daemon=True).start()
-                self._send(200, json.dumps({"ok": True}))
+                self._send(200, json.dumps({"ok": True}, ensure_ascii=False))
             else:
                 self._send(404, b"not found", "text/plain")
         except Exception as exc:
-            self._send(200, json.dumps({"error": str(exc)}))
+            self._send(200, json.dumps({"error": str(exc)}, ensure_ascii=False))
 
     def log_message(self, *args):
         pass

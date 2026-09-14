@@ -95,7 +95,7 @@ def test_augment_jsonl_appends_generated(monkeypatch, tmp_path):
     tools = [{"name": "f", "parameters": {"type": "object", "properties": {}}}]
     src = tmp_path / "seed.jsonl"
     with open(src, "w") as handle:
-        handle.write(json.dumps({"tools": tools, "query": "seed", "answers": []}) + "\n")
+        handle.write(json.dumps({"tools": tools, "query": "seed", "answers": []}, ensure_ascii=False) + "\n")
 
     monkeypatch.setattr(finetune, "generate_examples", _unique_generator())
     out = finetune.augment_jsonl(str(src), num_samples=3, out_path=str(tmp_path / "out.jsonl"))

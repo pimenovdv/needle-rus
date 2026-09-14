@@ -48,8 +48,8 @@ def run_tests(module, min_confidence=0.0, verbose=True):
                 critical_failures.append(case)
             if verbose:
                 print(f"FAIL [{case['category']}] {case['query']}")
-                print(f"  want {json.dumps(want)}")
-                print(f"  got  {json.dumps(got)}")
+                print(f"  want {json.dumps(want, ensure_ascii=False)}")
+                print(f"  got  {json.dumps(got, ensure_ascii=False)}")
     passed = len(module.TEST_CASES) - len(failures)
     print(f"{passed}/{len(module.TEST_CASES)} passed, {len(critical_failures)} critical failures "
           f"(confidence gate {min_confidence})")
