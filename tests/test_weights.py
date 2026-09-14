@@ -5,7 +5,7 @@ import pytest
 
 ENVELOPE = json.dumps({"type": "call", "confidence": 0.9,
                        "function_calls": [{"name": "City",
-                                           "arguments": {"city": "Paris"}}]}).encode("utf-8")
+                                           "arguments": {"city": "Paris"}}]}, ensure_ascii=False).encode("utf-8")
 
 
 class _Stub:

@@ -21,7 +21,7 @@ def _write_data(path):
     ]
     with open(path, "w") as handle:
         for row in rows:
-            handle.write(json.dumps(row) + "\n")
+            handle.write(json.dumps(row, ensure_ascii=False) + "\n")
 
 
 def _finetune_args(data, checkpoint, out, ckpt_dir, qat_bits="auto"):
@@ -142,7 +142,7 @@ def test_finetune_adapter_records_realized_seed(tiny_checkpoint, tmp_path):
         })
     with data.open("w") as handle:
         for row in rows:
-            handle.write(json.dumps(row) + "\n")
+            handle.write(json.dumps(row, ensure_ascii=False) + "\n")
 
     out = tmp_path / "seeded-adapter.pkl"
     args = _finetune_args(data, tiny_checkpoint, out, tmp_path / "ck", qat_bits="none")

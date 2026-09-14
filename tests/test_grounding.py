@@ -21,7 +21,7 @@ class _Stub:
         self.calls.append(("complete", text.decode("utf-8")))
         buffer = args[-2]
         envelope = self.envelopes.pop(0) if len(self.envelopes) > 1 else self.envelopes[0]
-        buffer.value = json.dumps(envelope).encode("utf-8")
+        buffer.value = json.dumps(envelope, ensure_ascii=False).encode("utf-8")
         return 0
 
     def needle_reset(self):
@@ -111,7 +111,7 @@ def test_years_carry_across_turns_until_reset(stub):
     stub.envelopes = [_call("2031-09-05")]
     agent = needle.Needle(tools=[Invoice])
     assert "validation" not in agent.complete("bill Acme on 5th September 2031")
-    assert "validation" not in agent.complete(json.dumps({"id": 42, "since": "2019-03-01"}))
+    assert "validation" not in agent.complete(json.dumps({"id": 42, "since": "2019-03-01"}, ensure_ascii=False))
 
     agent.reset()
     response = agent.complete("customer since March 2019, bill them")

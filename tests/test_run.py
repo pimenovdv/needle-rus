@@ -30,7 +30,7 @@ def test_main_loads_tools_file_and_runs(tiny_checkpoint, tmp_path, capsys):
 
     tools = [{"name": "f", "parameters": {"type": "object", "properties": {}}}]
     path = tmp_path / "tools.json"
-    path.write_text(json.dumps(tools))
+    path.write_text(json.dumps(tools, ensure_ascii=False))
 
     main(argparse.Namespace(
         checkpoint=tiny_checkpoint, query="use f", tools=str(path),
