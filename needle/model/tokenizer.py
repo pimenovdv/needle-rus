@@ -79,6 +79,36 @@ class SANTokenizer:
         return {"input_ids": all_ids}
 
 
+
+class TokenBudgetCalculator:
+    def __init__(self, tokenizer, max_context_length: int = 256):
+        self.tokenizer = tokenizer
+        self.max_context_length = max_context_length
+
+    def calculate_budget(self, text: str) -> dict:
+        tokens = self.tokenizer.encode(text)
+        token_count = len(tokens)
+        char_count = len(text)
+        compression_ratio = char_count / max(1, token_count)
+
+        return {
+            "token_count": token_count,
+            "char_count": char_count,
+            "compression_ratio": compression_ratio,
+            "within_budget": token_count <= self.max_context_length,
+            "remaining_budget": max(0, self.max_context_length - token_count)
+        }
+
+def validate_cyrillic_bpe(tokenizer, text: str) -> bool:
+    try:
+        # Encode to bytes and back to string to ensure utf-8 handling
+        utf8_text = text.encode("utf-8").decode("utf-8")
+        tokens = tokenizer.encode(utf8_text)
+        decoded = tokenizer.decode(tokens)
+        return decoded == utf8_text
+    except Exception:
+        return False
+
 def _download_tokenizer_from_hf(prefix):
     from huggingface_hub import hf_hub_download
 
