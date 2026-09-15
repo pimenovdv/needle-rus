@@ -174,3 +174,46 @@ def test_byte_fallback_json():
     # Asserting that decoding correctly reconstructs the utf-8 characters using byte level fallback
     # Because RefTokenizer currently only implements encode in the exported code (for simulation purposes),
     # verifying encode works explicitly guarantees byte-level grammar decoding is unhindered for JSON.
+
+def test_token_budget_calculator():
+    from needle.model.tokenizer import get_tokenizer, TokenBudgetCalculator
+    tokenizer = get_tokenizer()
+
+    # Test with standard English text
+    calc = TokenBudgetCalculator(tokenizer, max_context_length=256)
+    res_en = calc.calculate_budget("Hello world!")
+    assert res_en["char_count"] == 12
+    assert res_en["token_count"] > 0
+    assert res_en["compression_ratio"] > 0
+    assert res_en["within_budget"] is True
+
+    # Test with Cyrillic text
+    res_ru = calc.calculate_budget("Привет, мир! Это тестовая строка на русском языке.")
+    assert res_ru["char_count"] == 50
+    assert res_ru["token_count"] > 0
+    assert res_ru["within_budget"] is True
+
+    # Test with empty string
+    res_empty = calc.calculate_budget("")
+    assert res_empty["char_count"] == 0
+    assert res_empty["compression_ratio"] == 0.0
+
+    # Test budget limit
+    calc_small = TokenBudgetCalculator(tokenizer, max_context_length=5)
+    res_large = calc_small.calculate_budget("Очень длинный текст, который точно превысит лимит.")
+    assert res_large["within_budget"] is False
+    assert res_large["remaining_budget"] == 0
+
+def test_validate_cyrillic_bpe():
+    from needle.model.tokenizer import get_tokenizer, validate_cyrillic_bpe
+    tokenizer = get_tokenizer()
+
+    # Test standard russian text
+    assert validate_cyrillic_bpe(tokenizer, "Тестовая строка") is True
+
+    # Test mixed languages
+    assert validate_cyrillic_bpe(tokenizer, "Hello привет") is True
+
+    # Test edge cases
+    assert validate_cyrillic_bpe(tokenizer, "") is True
+    assert validate_cyrillic_bpe(tokenizer, "«кавычки» — тире") is True
