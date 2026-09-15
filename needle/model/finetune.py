@@ -165,7 +165,7 @@ def _collect_tools(examples):
 
 
 def augment_jsonl(path, num_samples, model=DEFAULT_MODEL, batch_size=25, out_path=None, workers=8):
-    with open(path) as handle:
+    with open(path, encoding="utf-8") as handle:
         examples = [json.loads(line) for line in handle if line.strip()]
     tools = _collect_tools(examples)
     if not tools:
@@ -184,7 +184,7 @@ def generate_main(args):
     model = args.model or DEFAULT_MODEL
     workers = getattr(args, "workers", 8)
     if args.tools:
-        with open(args.tools) as handle:
+        with open(args.tools, encoding="utf-8") as handle:
             tools = json.load(handle)
         out = args.output or "needle_data.jsonl"
         language = getattr(args, "language", "en")
@@ -230,7 +230,7 @@ def _encode(tokenizer, example, max_len):
 
 def fit_max_len(path, tokenizer, cap):
     longest = 0
-    with open(path) as handle:
+    with open(path, encoding="utf-8") as handle:
         for line in handle:
             line = line.strip()
             if not line:
@@ -248,7 +248,7 @@ def fit_max_len(path, tokenizer, cap):
 
 def load_jsonl(path, tokenizer, max_len):
     seqs, masks = [], []
-    with open(path) as handle:
+    with open(path, encoding="utf-8") as handle:
         for line in handle:
             line = line.strip()
             if not line:

@@ -94,7 +94,7 @@ def test_fit_max_len_buckets(tok, tmp_path):
     from needle.model.finetune import fit_max_len
 
     path = tmp_path / "data.jsonl"
-    with open(path, "w") as handle:
+    with open(path, "w", encoding="utf-8") as handle:
         handle.write(json.dumps({"tools": [], "query": "short", "answers": []}, ensure_ascii=False) + "\n")
 
     assert fit_max_len(str(path), tok, 1024) == 128
@@ -110,7 +110,7 @@ def test_load_jsonl_shapes_and_skips_invalid(tok, tmp_path):
         {"tools": [], "query": "b", "answers": []},
         {"tools": [], "reasoning": "no query here"},
     ]
-    with open(path, "w") as handle:
+    with open(path, "w", encoding="utf-8") as handle:
         for row in rows:
             handle.write(json.dumps(row, ensure_ascii=False) + "\n")
         handle.write("\n")

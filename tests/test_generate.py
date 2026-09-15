@@ -94,10 +94,10 @@ def test_augment_jsonl_appends_generated(monkeypatch, tmp_path):
     monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
     tools = [{"name": "f", "parameters": {"type": "object", "properties": {}}}]
     src = tmp_path / "seed.jsonl"
-    with open(src, "w") as handle:
+    with open(src, "w", encoding="utf-8") as handle:
         handle.write(json.dumps({"tools": tools, "query": "seed", "answers": []}, ensure_ascii=False) + "\n")
 
     monkeypatch.setattr(finetune, "generate_examples", _unique_generator())
     out = finetune.augment_jsonl(str(src), num_samples=3, out_path=str(tmp_path / "out.jsonl"))
-    lines = [line for line in open(out) if line.strip()]
+    lines = [line for line in open(out, encoding="utf-8") if line.strip()]
     assert len(lines) == 1 + 3

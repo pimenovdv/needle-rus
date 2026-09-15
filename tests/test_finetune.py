@@ -19,7 +19,7 @@ def _write_data(path):
         {"tools": TOOLS, "query": "nothing actionable here",
          "reasoning": "off-topic", "answers": []},
     ]
-    with open(path, "w") as handle:
+    with open(path, "w", encoding="utf-8") as handle:
         for row in rows:
             handle.write(json.dumps(row, ensure_ascii=False) + "\n")
 
@@ -140,7 +140,7 @@ def test_finetune_adapter_records_realized_seed(tiny_checkpoint, tmp_path):
             "query": f"email user{i}@example.com about item {i}",
             "answers": [{"name": "send_email", "arguments": {"to": f"user{i}@example.com", "subject": f"item {i}"}}],
         })
-    with data.open("w") as handle:
+    with data.open("w", encoding="utf-8") as handle:
         for row in rows:
             handle.write(json.dumps(row, ensure_ascii=False) + "\n")
 
